@@ -72,7 +72,7 @@ async function buscaZilliz(vetor) {
     body: JSON.stringify({
       collectionName: COLECAO,
       data: [vetor],
-      annsField: "vetor",
+      annsField: "vector",
       limit: 4,
       outputFields: ["nome", "categoria", "tipo", "texto"],
     }),
