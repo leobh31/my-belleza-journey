@@ -145,10 +145,11 @@ function construir(card: HTMLElement, wrapper: HTMLElement, cfg: Config) {
   const b4 = bloco("Seu telefone (com DDD)", inpTel);
   const b5 = bloco("Seu e-mail (para enviarmos a confirmação)", inpEmail);
 
-  // campo-armadilha: pessoas não veem; robôs preenchem
+  // campo-armadilha (honeypot): pessoas não veem; robôs preenchem
+  // Nome _hp é improvável de ser preenchido por gerenciadores de senha/autofill
   const armadilha = el("input");
   armadilha.type = "text";
-  armadilha.name = "website";
+  armadilha.name = "_hp";
   armadilha.tabIndex = -1;
   armadilha.autocomplete = "off";
   armadilha.setAttribute("aria-hidden", "true");
@@ -237,7 +238,7 @@ function construir(card: HTMLElement, wrapper: HTMLElement, cfg: Config) {
       const r = await fetch(API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ servico, data, hora: estado.hora, nome, telefone, email, website: armadilha.value }),
+        body: JSON.stringify({ servico, data, hora: estado.hora, nome, telefone, email, _hp: armadilha.value }),
       });
       let j: any = {};
       try {

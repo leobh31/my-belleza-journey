@@ -16,7 +16,13 @@ export default async function handler(req, res) {
     }
     if (req.method === "POST") {
       const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
-      if (body.website) return res.status(400).json({ ok: false, erro: "Não foi possível concluir o agendamento." }); // campo-armadilha para robôs
+      // Honeypot: campo oculto com nome improvável de ser preenchido por autofill
+      // Aceita string vazia, null, undefined - só bloqueia se tiver conteúdo real
+      const honeypot = body._hp || body.website || body.url || body.site;
+      if (honeypot && String(honeypot).trim().length > 0) {
+        console.warn("Honeypot acionado:", { ip: req.headers["x-forwarded-for"], ua: req.headers["user-agent"] });
+        return res.status(400).json({ ok: false, erro: "Não foi possível concluir o agendamento." });
+      }
       const r = await agendar(body);
       return res.status(r.ok ? 200 : 400).json(r);
     }
