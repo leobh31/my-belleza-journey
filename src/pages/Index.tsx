@@ -36,7 +36,7 @@ const Index = () => {
       if (!messagesContainer) return;
       const acoes = [
         { texto: '📅 Agendar horário', fazer: () => (window as any).openBookingForm() },
-        { texto: '💰 Serviços e valores', fazer: () => (window as any).selectOption('Quais serviços vocês oferecem e quanto custam?') },
+        { texto: '💰 Serviços e valores', fazer: () => (window as any).listarProcedimentos() },
         { texto: '🕒 Horário e endereço', fazer: () => (window as any).selectOption('Qual o horário de funcionamento e o endereço da clínica?') },
         { texto: '❓ Tirar uma dúvida', fazer: () => { (document.getElementById('message-input') as HTMLInputElement | null)?.focus(); } },
       ];
@@ -53,6 +53,13 @@ const Index = () => {
       messagesContainer.appendChild(bloco);
       messagesContainer.scrollTop = messagesContainer.scrollHeight;
     };
+
+    // Função específica para listar procedimentos consultando o RAG
+    (window as any).listarProcedimentos = function() {
+      const pergunta = 'Liste todos os procedimentos, tratamentos e serviços disponíveis na clínica com suas descrições e valores, organizados por categoria (facial, corporal, laser)';
+      (window as any).selectOption(pergunta);
+    };
+
     (window as any).displayChatMessage = function(data: any) {
       const chatContainer = document.getElementById('chat-interface');
 

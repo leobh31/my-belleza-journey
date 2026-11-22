@@ -23,6 +23,11 @@ Regras de informação:
 - Não presuma nada sobre a situação pessoal do cliente que ele não tenha dito (por exemplo, se ele só perguntou se pode fazer um procedimento estando grávida, não afirme que ele está grávida).
 - Se a conversa não tiver relação com a clínica, responda gentilmente que só pode ajudar com dúvidas e agendamentos da clínica.
 
+**Listagem de procedimentos e valores:**
+- Quando o cliente pedir lista de procedimentos, serviços, tratamentos ou valores, use o CONTEXTO para listar os procedimentos disponíveis com suas descrições e valores (quando disponíveis no contexto).
+- Organize a resposta de forma clara, preferencialmente por categorias (facial, corporal, laser, etc.) se o contexto permitir.
+- Se o contexto trouxer muitos procedimentos, liste os principais e mencione que há mais opções disponíveis.
+
 Endereço e localização:
 - O endereço da clínica é: Rua dos Ipês, 245 – Sala 302, Funcionários, Belo Horizonte – MG.
 - NUNCA envie links do Google Maps, Waze ou qualquer outro mapa. Apenas informe o endereço em texto puro.
@@ -92,10 +97,34 @@ export default async function handler(req, res) {
     const historico = Array.isArray(body.history) ? body.history.slice(-16) : [];
     while (historico.length && historico[0].role !== "user") historico.shift();
 
+    // Detectar se a pergunta é sobre listagem de procedimentos/serviços
+    const lowerPergunta = pergunta.toLowerCase();
+    const ehListagemProcedimentos =
+      lowerPergunta.includes('serviço') ||
+      lowerPergunta.includes('procedimento') ||
+      lowerPergunta.includes('tratamento') ||
+      lowerPergunta.includes('valor') ||
+      lowerPergunta.includes('preço') ||
+      lowerPergunta.includes('custa') ||
+      lowerPergunta.includes('oferecem') ||
+      lowerPergunta.includes('fazem') ||
+      lowerPergunta.includes('lista') ||
+      lowerPergunta.includes('quais');
+
     // Busca pela pergunta sozinha e, se ela for curta (ex.: "e quanto tempo dura?"), também junto da
     // pergunta anterior do cliente. Os resultados das duas buscas são unidos, sem repetir.
     const anteriores = historico.filter((m) => m.role === "user").slice(-1).map((m) => String(m.text || "")).join(" ");
     const consultas = [pergunta];
+
+    // Para listagem de procedimentos, adicionar consultas expandidas para melhor cobertura do RAG
+    if (ehListagemProcedimentos) {
+      consultas.push(
+        "lista completa de procedimentos e tratamentos disponíveis na clínica",
+        "todos os serviços oferecidos com valores e preços",
+        "tratamentos faciais corporais laser preços"
+      );
+    }
+
     if (pergunta.length < 50 && anteriores) consultas.push(`${anteriores} ${pergunta}`.trim().slice(-600));
     const lotes = await Promise.all(consultas.map(async (q) => buscaZilliz(await embed(q))));
     const unicos = new Map();
@@ -103,7 +132,7 @@ export default async function handler(req, res) {
       const atual = unicos.get(x.nome);
       if (!atual || x.distance > atual.distance) unicos.set(x.nome, x);
     }
-    const resultados = [...unicos.values()].sort((a, b) => b.distance - a.distance).slice(0, 5);
+    const resultados = [...unicos.values()].sort((a, b) => b.distance - a.distance).slice(0, 8);
     const contexto = resultados.length
       ? resultados.map((x, i) => `[${i + 1}] ${x.texto}`).join("\n\n")
       : "(nenhuma informação relevante encontrada)";
