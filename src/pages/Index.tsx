@@ -259,7 +259,7 @@ const Index = () => {
       } else if (lowerMessage.includes('horário') || lowerMessage.includes('funcionamento') || lowerMessage.includes('aberto')) {
         return 'Funcionamos de segunda a sábado, das 8h às 14h (domingo fechado). Use o botão Agendar horário para escolher o seu horário!';
       } else if (lowerMessage.includes('localização') || lowerMessage.includes('endereço') || lowerMessage.includes('onde')) {
-        return 'Estamos na Rua dos Ipês, 245 – Sala 302, Funcionários, Belo Horizonte – MG.';
+        return 'Estamos na Rua dos Ipês, 245 – Sala 302, Funcionários, Belo Horizonte – MG.\n\nPara rotas, abra o Google Maps ou Waze e cole o endereço acima.';
       } else {
         return 'Parece que estamos com instabilidade na conexão no momento. Por favor, tente novamente em alguns instantes ou entre em contato pelo nosso WhatsApp.';
       }

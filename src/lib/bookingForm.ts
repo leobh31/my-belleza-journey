@@ -239,14 +239,23 @@ function construir(card: HTMLElement, wrapper: HTMLElement, cfg: Config) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ servico, data, hora: estado.hora, nome, telefone, email, website: armadilha.value }),
       });
-      const j = await r.json().catch(() => ({}));
+      let j: any = {};
+      try {
+        j = await r.json();
+      } catch {
+        j = { erro: `Erro de comunicação (status ${r.status})` };
+      }
       if (j.ok) {
         mostraConfirmacao(card, j);
         return;
       }
-      mostra(erroGeral, j.erro || `Não foi possível agendar agora. Fale com a clínica pelo WhatsApp ${cfg.clinica.whatsapp}.`);
+      // Mostra o erro EXATO que veio da API
+      const msgErro = j.erro || j.message || `Erro ${r.status}: não foi possível agendar.`;
+      console.error("Erro no agendamento:", j);
+      mostra(erroGeral, msgErro);
       if (j.conflito) carregaHorarios(data);
-    } catch {
+    } catch (e) {
+      console.error("Erro de rede:", e);
       mostra(erroGeral, `Sem conexão no momento. Tente de novo ou fale com a clínica pelo WhatsApp ${cfg.clinica.whatsapp}.`);
     }
     erroGeral.scrollIntoView({ behavior: "smooth", block: "center" });
