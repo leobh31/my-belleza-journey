@@ -252,11 +252,17 @@ function construir(card: HTMLElement, wrapper: HTMLElement, cfg: Config) {
       }
       // Mostra o erro EXATO que veio da API
       const msgErro = j.erro || j.message || `Erro ${r.status}: não foi possível agendar.`;
-      console.error("Erro no agendamento:", j);
+      console.error("❌ Erro no agendamento:", {
+        status: r.status,
+        statusText: r.statusText,
+        ok: r.ok,
+        body: j,
+        enviado: { servico, data, hora: estado.hora, nome, telefone, email }
+      });
       mostra(erroGeral, msgErro);
       if (j.conflito) carregaHorarios(data);
     } catch (e) {
-      console.error("Erro de rede:", e);
+      console.error("❌ Erro de rede/exceção:", e);
       mostra(erroGeral, `Sem conexão no momento. Tente de novo ou fale com a clínica pelo WhatsApp ${cfg.clinica.whatsapp}.`);
     }
     erroGeral.scrollIntoView({ behavior: "smooth", block: "center" });
